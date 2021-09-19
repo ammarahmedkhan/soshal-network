@@ -26,10 +26,10 @@ http
     res.write("Hello World!"); //write a response to the client
     res.end(); //end the response
   })
-  .listen(8080); //the server object listens on port 8080
+  .listen(process.env.PORT || 8080); //the server object listens on port 8080
 */
 
-var server = app.listen(8080, function (req, res) {
+var server = app.listen(process.env.PORT || 8080, function (req, res) {
   var host = server.address().address;
   var port = server.address().port;
 
