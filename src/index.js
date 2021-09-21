@@ -29,7 +29,7 @@ http
   .listen(process.env.PORT || 8080); //the server object listens on port 8080
 */
 
-var server = app.listen(process.env.PORT || 8080, function (req, res) {
+var server = app.listen(process.env.PORT || 3000, function (req, res) {
   var host = server.address().address;
   var port = server.address().port;
 
