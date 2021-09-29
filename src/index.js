@@ -62,6 +62,16 @@ app.get("/listUsers", function (req, res) {
   //res.end(JSON.parse(req).toString());
 });
 
+app.get("/posts/", async function (req, res) {
+  //console.log(req.headers["content-length"]);
+  //res.end(JSON.stringify(req.params.user1));
+  //res.json(req.body);
+  var ret = await findUserPosts(client, "");
+  console.log(req.params.postId);
+  //res.json(req.headers);
+  res.json(ret);
+});
+
 app.get("/posts/:userId", async function (req, res) {
   //console.log(req.headers["content-length"]);
   //res.end(JSON.stringify(req.params.user1));
@@ -86,7 +96,7 @@ app.post("/posts", async function (req, res) {
   //console.log(req.headers["content-length"]);
   //res.end(JSON.stringify(req.params.user1));
   //res.json(req.body);
-  var ret = await createPost(client, JSON.parse(req.body));
+  var ret = await createPost(client, req.body);
   //  console.log(req.params.postId);
   //res.json(req.headers);
   res.json(ret);
@@ -215,10 +225,17 @@ async function findUsers(client, email) {
 }
 
 async function findUserPosts(client, user) {
+    var query;
+  if (user !== "") {
+    query = { user: user };
+  } else {
+    query = {};
+  }
+
   const cursor = await client
     .db("soshal-network")
     .collection("posts")
-    .find({ user: user });
+    .find(query);
 
   if (cursor) {
     console.log(`posts found by the following user '${user}':`);
