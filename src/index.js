@@ -92,6 +92,17 @@ app.get("/comments/:postId", async function (req, res) {
   res.json(ret);
 });
 
+app.get("/comments", async function (req, res) {
+  //console.log(req.headers["content-length"]);
+  //res.end(JSON.stringify(req.params.user1));
+  //res.json(req.body);
+  var ret = await findPostComments(client, "");
+  console.log(req.params.postId);
+  //res.json(req.headers);
+  res.json(ret);
+});
+
+
 app.post("/posts", async function (req, res) {
   //console.log(req.headers["content-length"]);
   //res.end(JSON.stringify(req.params.user1));
@@ -106,7 +117,7 @@ app.post("/comments", async function (req, res) {
   //console.log(req.headers["content-length"]);
   //res.end(JSON.stringify(req.params.user1));
   //res.json(req.body);
-  var ret = await createPostComment(client, JSON.parse(req.body));
+  var ret = await createPostComment(client, req.body);
   console.log(req.params.postId);
   //res.json(req.headers);
   res.json(ret);
@@ -274,10 +285,17 @@ async function findUserPosts(client, user) {
 }
 
 async function findPostComments(client, postId) {
+    var query;
+  if (postId !== "") {
+    query = { postId: postId.toString() };
+  } else {
+    query = {};
+  }
+  
   const cursor = await client
     .db("soshal-network")
     .collection("comments")
-    .find({ postId: postId.toString() });
+    .find(query);
 
   if (cursor) {
     //console.log(`comments found by the post id '${postId}':`);
