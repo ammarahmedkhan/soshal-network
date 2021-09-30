@@ -131,6 +131,18 @@ app.get("/users/:email", async function (req, res) {
   res.json(ret);
 });
 
+app.get("/users", async function (req, res) {
+  //console.log(req.headers["content-length"]);
+  //res.end(JSON.stringify(req.params.user1));
+  //res.json(req.body);
+  var ret = await findUsers(client, "");
+  console.log(req.params.email);
+  //res.json(req.headers);
+  res.json(ret);
+});
+
+
+
 async function main() {
   /**
    * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
@@ -202,10 +214,17 @@ async function createPostComment(client, comment) {
 }
 
 async function findUsers(client, email) {
+    var query;
+  if (email !== "") {
+    query = { email: email };
+  } else {
+    query = {};
+  }
+  
   const cursor = await client
     .db("soshal-network")
     .collection("users")
-    .find({ email: email });
+    .find(query);
 
   if (cursor) {
     console.log(`users found by the following email '${email}':`);
