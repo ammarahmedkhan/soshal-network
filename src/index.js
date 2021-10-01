@@ -213,6 +213,7 @@ async function createPost(client, post) {
     .db("soshal-network")
     .collection("posts")
     .insertOne(post);
+  return result;
   console.log(`post created!: ${result.insertedId}`);
 }
 
