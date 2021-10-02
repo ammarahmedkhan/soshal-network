@@ -152,6 +152,16 @@ app.get("/users/:email", async function (req, res) {
   res.json(ret);
 });
 
+app.get("/stats/:email", async function (req, res) {
+  //console.log(req.headers["content-length"]);
+  //res.end(JSON.stringify(req.params.user1));
+  //res.json(req.body);
+  var ret = await findUserStats(client, req.params.email);
+  console.log(req.params.email);
+  //res.json(req.headers);
+  res.json(ret);
+});
+
 app.get("/users", async function (req, res) {
   //console.log(req.headers["content-length"]);
   //res.end(JSON.stringify(req.params.user1));
@@ -233,6 +243,31 @@ async function createPostComment(client, comment) {
     .collection("comments")
     .insertOne(comment);
   console.log(`commented created!: ${result.insertedId}`);
+}
+
+async function findUserStats(client, email) {
+  var returnObject = { _id: email, postCount: 0, likeCount: 0 };
+  var cursor = await client
+    .db("soshal-network")
+    .collection("posts")
+    .aggregate([{ $group: { _id: "$user", postCount: { $sum: 1 } } }]);
+
+  if (cursor) {
+    const results = await cursor.toArray();
+
+    returnObject.postCount = results.find((o) => o._id === email).postCount;
+  }
+
+  var cursor = await client
+    .db("soshal-network")
+    .collection("posts")
+    .aggregate([{ $group: { _id: "$user", likeCount: { $sum: "$likes" } } }]);
+
+  if (cursor) {
+    const results = await cursor.toArray();
+    returnObject.likeCount = results.find((o) => o._id === email).likeCount;
+  }
+  return returnObject;
 }
 
 async function findUsers(client, email) {
