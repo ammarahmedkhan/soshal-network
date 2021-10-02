@@ -1,5 +1,5 @@
 var http = require("http");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 var express = require("express");
 var app = express();
 var fs = require("fs");
@@ -87,6 +87,16 @@ app.get("/comments/:postId", async function (req, res) {
   //res.end(JSON.stringify(req.params.user1));
   //res.json(req.body);
   var ret = await findPostComments(client, req.params.postId);
+  console.log(req.params.postId);
+  //res.json(req.headers);
+  res.json(ret);
+});
+
+app.post("/likePost/:postId", async function (req, res) {
+  //console.log(req.headers["content-length"]);
+  //res.end(JSON.stringify(req.params.user1));
+  //res.json(req.body);
+  var ret = await likePost(client, req.params.postId);
   console.log(req.params.postId);
   //res.json(req.headers);
   res.json(ret);
@@ -283,6 +293,17 @@ async function findUserPosts(client, user) {
     console.log(`posts found by the following user '${user}'`);
  */
   }
+}
+
+async function likePost(client, postId) {
+  const cursor = await client
+    .db("soshal-network")
+    .collection("posts")
+    .updateOne({ _id: new ObjectId(postId) }, { $inc: { likes: 1 } });
+  if (cursor) {
+    return cursor;
+  }
+  return "";
 }
 
 async function findPostComments(client, postId) {
