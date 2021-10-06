@@ -123,6 +123,26 @@ app.post("/posts", async function (req, res) {
   res.json(ret);
 });
 
+app.post("/chat", async function (req, res) {
+  //console.log(req.headers["content-length"]);
+  //res.end(JSON.stringify(req.params.user1));
+  //res.json(req.body);
+  var ret = await createChat(client, req.body);
+  console.log(ret);
+  //res.json(req.headers);
+  res.json(ret);
+});
+
+app.get("/getChats/:email", async function (req, res) {
+  //console.log(req.headers["content-length"]);
+  //res.end(JSON.stringify(req.params.user1));
+  //res.json(req.body);
+  var ret = await getChats(client, req.params.email);
+  console.log(ret);
+  //res.json(req.headers);
+  res.json(ret);
+});
+
 app.post("/comments", async function (req, res) {
   //console.log(req.headers["content-length"]);
   //res.end(JSON.stringify(req.params.user1));
@@ -328,6 +348,102 @@ async function findUserPosts(client, user) {
     console.log(`posts found by the following user '${user}'`);
  */
   }
+}
+
+async function getChats(client, email) {
+  var query;
+  query = {
+    $or: [{ user1: email }, { user2: email }]
+  };
+
+  const cursor = await client
+    .db("soshal-network")
+    .collection("chats")
+    .find(query);
+
+  if (cursor) {
+    const results = cursor.toArray();
+    return results;
+  }
+}
+
+async function createChat(client, body) {
+  var fromUser = body.fromUser;
+  var toUser = body.toUser;
+  var text = body.text;
+  var query;
+  if (toUser !== "" && fromUser !== "") {
+    console.log(toUser, fromUser);
+
+    query = {
+      $or: [
+        { $and: [{ user1: fromUser }, { user2: toUser }] },
+        { $and: [{ user1: toUser }, { user2: fromUser }] }
+      ]
+    };
+  }
+  var cursor = await client
+    .db("soshal-network")
+    .collection("chats")
+    .find(query);
+  //.updateOne({ _id: new ObjectId(postId) }, { $inc: { likes: 1 } });
+  if (cursor) {
+    console.log("data returned", cursor);
+    const results = await cursor.toArray();
+    if (results.length === 0) {
+      //create the channel
+      //return results;
+
+      var insertChatChannel = {
+        user1: toUser,
+        user2: fromUser,
+        createdAt: new Date().toUTCString(),
+        comments: [
+          { user: fromUser, text: text, createdAt: new Date().toUTCString() }
+        ]
+      };
+      console.log("insertion");
+      cursor = await client
+        .db("soshal-network")
+        .collection("chats")
+        .insertOne(insertChatChannel);
+
+      if (cursor) {
+        return cursor;
+      } else {
+        return {};
+      }
+    } else {
+      console.log("add the comment");
+
+      cursor = await client
+        .db("soshal-network")
+        .collection("chats")
+        .updateOne(
+          { _id: new ObjectId(results[0]._id) },
+          {
+            $push: {
+              comments: {
+                user: fromUser,
+                text: text,
+                createdAt: new Date().toUTCString()
+              }
+            }
+          }
+        );
+      if (cursor) {
+        return cursor;
+      } else {
+        return {};
+      }
+
+      //add the comment
+    }
+  } else {
+    console.log("none run");
+    return {};
+  }
+  //    return cursor._events;
 }
 
 async function likePost(client, postId) {
