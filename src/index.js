@@ -200,6 +200,7 @@ async function main() {
    * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
    * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
    */
+   //hopefully this`ll be in a .env file sometime soon.
   //    const uri = "mongodb+srv://<username>:<password>@<your-cluster-url>/test?retryWrites=true&w=majority";
   const uri =
     "mongodb+srv://dbUser:verystrongpassword32@mongodbcluster.38a6u.mongodb.net/test";
